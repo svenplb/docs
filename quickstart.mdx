@@ -1,86 +1,155 @@
 ---
-title: 'Quickstart'
-description: 'Start building awesome documentation in under 5 minutes'
+title: 'Quick Start Guide'
+description: 'Get started with Hi SDK - LLM Development Kit for Raspberry Pi'
 ---
 
-## Setup your development
+## Installation Options
 
-Learn how to update your docs locally and deploy them to the public.
+### Option 1: Pre-built Raspberry Pi Image
 
-### Edit and preview
+Download our pre-configured Raspberry Pi image with all dependencies:
+[Download Hi SDK Image](your_drive_link_here)
 
-<AccordionGroup>
-  <Accordion icon="github" title="Clone your docs locally">
-    During the onboarding process, we created a repository on your Github with
-    your docs content. You can find this repository on our
-    [dashboard](https://dashboard.mintlify.com). To clone the repository
-    locally, follow these
-    [instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-    in your terminal.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Preview changes">
-    Previewing helps you make sure your changes look as intended. We built a
-    command line interface to render these changes locally. 1. Install the
-    [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the
-    documentation changes locally with this command: ``` npm i -g mintlify ```
-    2. Run the following command at the root of your documentation (where
-    `mint.json` is): ``` mintlify dev ```
-  </Accordion>
-</AccordionGroup>
+<Note>
+  This is a pre-built image with all dependencies installed on a Raspberry Pi OS 6.6.31+rpt-rpi-v8.
+</Note>
 
-### Deploy your changes
+### Option 2: Development Setup
 
-<AccordionGroup>
+<Info>
+  **Prerequisites:**
+  - Python 3.11.2 or higher
+  - Raspberry Pi OS
+</Info>
 
-<Accordion icon="message-bot" title="Install our Github app">
-  Our Github app automatically deploys your changes to your docs site, so you
-  don't need to manage deployments yourself. You can find the link to install on
-  your [dashboard](https://dashboard.mintlify.com). Once the bot has been
-  successfully installed, there should be a check mark next to the commit hash
-  of the repo.
-</Accordion>
-<Accordion icon="rocket" title="Push your changes">
-  [Commit and push your changes to
-  Git](https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository#about-git-push)
-  for your changes to update in your docs site. If you push and don't see that
-  the Github app successfully deployed your changes, you can also manually
-  update your docs through our [dashboard](https://dashboard.mintlify.com).
-</Accordion>
+```bash
+# Clone the repository
+git clone https://github.com/svenplb/hi-sdk.git
+cd hi-sdk
 
-</AccordionGroup>
+# Create and activate virtual environment
+python3 -m venv --system-site-packages venv
+source venv/bin/activate
 
-## Update your docs
+# Install in development mode
+pip install -e .
+```
 
-Add content directly in your files with MDX syntax and React components. You can use any of our components, or even build your own.
+### Option 3: Manual Setup
 
-<CardGroup>
+If you prefer to set up dependencies manually on your existing system:
 
-<Card title="Style Your Docs" icon="paintbrush" href="/settings/global">
-  Add flair to your docs with personalized branding.
-</Card>
+<Steps>
+  <Step title="Install System Dependencies">
+    ```bash
+    sudo apt-get update
+    sudo apt-get install -y python3-pip git
+    ```
+  </Step>
 
-<Card
-  title="Add API Endpoints"
-  icon="square-code"
-  href="/api-playground/configuration"
->
-  Implement your OpenAPI spec and enable API user interaction.
-</Card>
+  <Step title="Install Ollama">
+    ```bash
+    curl https://ollama.ai/install.sh | sh
+    ollama pull gemma:2b
+    ```
+  </Step>
 
-<Card
-  title="Integrate Analytics"
-  icon="chart-mixed"
-  href="/analytics/supported-integrations"
->
-  Draw insights from user interactions with your documentation.
-</Card>
+  <Step title="Set Up SDK">
+    ```bash
+    git clone https://github.com/svenplb/hi-sdk.git
+    cd hi-sdk
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    pip install -e .
+    ```
+  </Step>
 
-<Card
-  title="Host on a Custom Domain"
-  icon="browser"
-  href="/settings/custom-domain/subdomain"
->
-  Keep your docs on your own website's subdomain.
-</Card>
+  <Step title="Start API Server">
+    ```bash
+    python3 -m uvicorn main:app --reload
+    ```
+  </Step>
+</Steps>
 
+## Basic Usage
+
+### Python SDK
+
+```python
+from sdk.client import HiClient
+from sdk.utils import SDKLogger
+
+# Initialize client
+client = HiClient()
+
+# Load a model
+client.load_model("gemma2:2b", temperature=0.7)
+
+# Simple chat
+response = client.chat("Tell me a joke")
+print(response)
+
+# Streaming chat with callback
+def on_token(token):
+    print(token, end="", flush=True)
+
+client.register_callback("on_token", on_token)
+for _ in client.chat("Tell me another joke"):
+    pass  # Tokens handled by callback
+```
+
+### CLI Usage
+
+After installation, you can use the CLI:
+
+```bash
+# Start interactive chat
+hi chat --model gemma2:2b --temp 0.7
+
+# List available models
+hi models
+```
+
+## Available Models
+
+<CardGroup cols={3}>
+  <Card title="qwen:0.5b" icon="feather">
+    Ultra-lightweight model for basic tasks
+  </Card>
+  <Card title="qwen:1.8b" icon="bolt">
+    Balanced performance (default)
+  </Card>
+  <Card title="gemma2:2b" icon="rocket">
+    Enhanced capabilities for complex tasks
+  </Card>
 </CardGroup>
+
+## Project Structure
+
+```bash
+hi-sdk/
+├── sdk/
+│   ├── __init__.py
+│   ├── cli.py
+│   ├── client.py
+│   ├── utils.py
+│   └── exceptions.py
+├── examples/
+│   └── quickstart.py
+├── tests/
+│   └── test_api.py
+└── setup.py
+```
+
+<Note>
+  We suggest using a virtual environment (we preinstall all dependencies on the device at the default path `/home/hi-sdk/venv`)
+</Note>
+```
+
+The key changes include:
+1. Proper frontmatter with title and description
+2. Consistent heading hierarchy
+3. Use of MDX components like `<Note>`, `<Info>`, `<Steps>`, and `<CardGroup>`
+4. Proper code block language specifications
+5. Organized structure following the Mintlify documentation style
